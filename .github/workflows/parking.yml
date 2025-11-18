@@ -1,0 +1,32 @@
+name: Auto Parking Session
+
+on:
+  schedule:
+    - cron: ${{ secrets.CRON_SCHEDULE_STRING }}
+  workflow_dispatch:  # optional manual trigger from Actions tab
+
+jobs:
+  start-parking-session:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium
+
+      - name: Run parking bot
+        env:
+          PARKING_URL:   ${{ secrets.PARKING_URL }}
+          LICENSE_PLATE: ${{ secrets.LICENSE_PLATE }}
+          EMAIL_ADDRESS: ${{ secrets.PARKING_EMAIL }}
+        run: |
+          python scripts/start_session.py
