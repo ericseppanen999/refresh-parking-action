@@ -25,26 +25,52 @@ def create_driver():
 
 
 def click_get_quote(driver):
-    wait = WebDriverWait(driver, 20)
+    wait = WebDriverWait(driver, 30)
+
+    # 1) Open the page
     driver.get(PARKING_URL)
+
+    # 2) Wait for the Length of Stay panel to exist
     wait.until(
         EC.presence_of_element_located(
-            (By.XPATH, "//div[@id='panel-LengthofStay']")
+            (By.ID, "panel-LengthofStay")
         )
     )
-    hours_dropdown = driver.find_element(
-        By.XPATH,
-        "//div[@id='panel-LengthofStay']"
-        "//div[contains(@class,'MuiGrid-grid-xs-6')][1]"
-        "//div[@role='button' and contains(@class,'MuiSelect-select')]"
+
+    # 3) Find and open the HOURS dropdown inside Length of Stay
+    #    We key off the "Hours" label so we don't depend on dynamic IDs.
+    hours_dropdown = wait.until(
+        EC.element_to_be_clickable(
+            (
+                By.XPATH,
+                "//div[@id='panel-LengthofStay']"
+                "//p[contains(., 'Hours')]/ancestor::div[@role='button']"
+            )
+        )
     )
     hours_dropdown.click()
-    hours_option = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable(
-            (By.XPATH, "//ul[@role='listbox']//li[contains(., '4')]")
+
+    # 4) Wait for the listbox of options to appear
+    wait.until(
+        EC.presence_of_element_located(
+            (By.XPATH, "//ul[@role='listbox']")
         )
     )
-    hours_option.click()
+
+    # 5) Click the "4" / "4 Hours" option (covers both cases)
+    hours_option = wait.until(
+        EC.element_to_be_clickable(
+            (
+                By.XPATH,
+                "//ul[@role='listbox']"
+                "//li[(contains(., '4') and contains(., 'Hour')) or normalize-space(.)='4']"
+            )
+        )
+    )
+    # JS click is often more reliable with MUI menus
+    driver.execute_script("arguments[0].click();", hours_option)
+
+    # 6) Click "Get Quote"
     get_quote_button = wait.until(
         EC.element_to_be_clickable(
             (By.XPATH, "//button[.//div//div[contains(text(), 'Get Quote')]]")
