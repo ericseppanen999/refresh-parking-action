@@ -1,8 +1,6 @@
 name: Auto Parking Session
 
 on:
-  schedule:
-    - cron: "0 16,20 * * 2,3,4"
   workflow_dispatch:  # optional manual trigger from Actions tab
 
 jobs:
